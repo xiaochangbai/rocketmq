@@ -56,6 +56,9 @@ public class BrokerStartup {
     public static final SystemConfigFileHelper CONFIG_FILE_HELPER = new SystemConfigFileHelper();
 
     public static void main(String[] args) {
+        System.setProperty(MixAll.ROCKETMQ_HOME_PROPERTY,"D:\\programs\\workspaces\\IdeaProjects\\rocketmq");
+        //‐n 127.0.0.0:9876 -c D:\programs\workspaces\IdeaProjects\rocketmq\conf\broker.conf
+        args = new String[]{"-n","127.0.0.0:9876","-c","D:\\programs\\workspaces\\IdeaProjects\\rocketmq\\conf\\broker.conf"};
         start(createBrokerController(args));
     }
 
