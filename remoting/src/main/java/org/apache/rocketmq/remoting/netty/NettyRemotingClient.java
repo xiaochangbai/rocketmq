@@ -764,9 +764,10 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
                             NettyRemotingClient.this.availableNamesrvAddrMap.putIfAbsent(namesrvAddr, true);
                         } else {
                             NettyRemotingClient.this.availableNamesrvAddrMap.remove(namesrvAddr);
+                            LOGGER.error("scanAvailableNameSrv get channel of {} failed, ", namesrvAddr);
                         }
                     } catch (Exception e) {
-                        LOGGER.error("scanAvailableNameSrv get channel of {} failed, ", namesrvAddr, e);
+                        LOGGER.error("scanAvailableNameSrv get channel of {} exception, ", namesrvAddr, e);
                     }
                 }
             });
