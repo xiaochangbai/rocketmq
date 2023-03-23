@@ -26,6 +26,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
+import org.apache.rocketmq.common.utils.ConcurrentHashMapUtils;
 import org.apache.rocketmq.proxy.config.ConfigurationManager;
 
 public class ReceiptHandleGroup {
@@ -74,7 +75,8 @@ public class ReceiptHandleGroup {
 
     public void put(String msgID, String handle, MessageReceiptHandle value) {
         long timeout = ConfigurationManager.getProxyConfig().getLockTimeoutMsInHandleGroup();
-        Map<String, HandleData> handleMap = receiptHandleMap.computeIfAbsent(msgID, msgIDKey -> new ConcurrentHashMap<>());
+        Map<String, HandleData> handleMap = ConcurrentHashMapUtils.computeIfAbsent((ConcurrentHashMap<String, Map<String, HandleData>>) this.receiptHandleMap,
+            msgID, msgIDKey -> new ConcurrentHashMap<>());
         handleMap.compute(handle, (handleKey, handleData) -> {
             if (handleData == null || handleData.needRemove) {
                 return new HandleData(value);
@@ -96,6 +98,30 @@ public class ReceiptHandleGroup {
 
     public boolean isEmpty() {
         return this.receiptHandleMap.isEmpty();
+    }
+
+    public MessageReceiptHandle get(String msgID, String handle) {
+        Map<String, HandleData> handleMap = this.receiptHandleMap.get(msgID);
+        if (handleMap == null) {
+            return null;
+        }
+        long timeout = ConfigurationManager.getProxyConfig().getLockTimeoutMsInHandleGroup();
+        AtomicReference<MessageReceiptHandle> res = new AtomicReference<>();
+        handleMap.computeIfPresent(handle, (handleKey, handleData) -> {
+            if (!handleData.lock(timeout)) {
+                throw new ProxyException(ProxyExceptionCode.INTERNAL_SERVER_ERROR, "try to get handle failed");
+            }
+            try {
+                if (handleData.needRemove) {
+                    return null;
+                }
+                res.set(handleData.messageReceiptHandle);
+            } finally {
+                handleData.unlock();
+            }
+            return handleData;
+        });
+        return res.get();
     }
 
     public MessageReceiptHandle remove(String msgID, String handle) {
