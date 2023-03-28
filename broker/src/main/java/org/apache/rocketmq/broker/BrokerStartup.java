@@ -50,6 +50,7 @@ public class BrokerStartup {
         System.setProperty(MixAll.ROCKETMQ_HOME_PROPERTY,"D:\\programs\\workspaces\\IdeaProjects\\rocketmq");
         //‐n 127.0.0.0:9876 -c D:\programs\workspaces\IdeaProjects\rocketmq\conf\broker.conf
         args = new String[]{"-n","127.0.0.1:9876","-c","D:\\programs\\workspaces\\IdeaProjects\\rocketmq\\conf\\broker.conf"};
+//        args = new String[]{"-n","127.0.0.1:9876","-c","D:\\programs\\workspaces\\IdeaProjects\\rocketmq\\conf-slave\\broker.conf"};
         start(createBrokerController(args));
     }
 
