@@ -20,3 +20,5 @@ bazel-testlogs
 .vscode
 
 conf/datadir/
+
+conf-slave/datadir/
